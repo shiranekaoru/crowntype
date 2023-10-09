@@ -56,19 +56,20 @@ struct ContentView: View {
             
 //            DirFlag ? Text("左回り") : Text("右回り")
             if upperFlag || (!upperFlag && !downFlag) {
-                HStack(spacing: 30){
-                    if v_cnt - 1 == -1 {
-                        Text("\(vowels[vowels.count-1])")
-                    }else{
-                        Text("\(vowels[v_cnt-1])")
-                    }
-                    Text("\(vowels[v_cnt])").fontWeight(.black)
+                VStack(spacing: 30){
                     if v_cnt + 1 == vowels.count{
                         Text("\(vowels[0])")
                     }else{
                         Text("\(vowels[v_cnt+1])")
                     }
                     
+                    Text("\(vowels[v_cnt])").fontWeight(.black)
+                    
+                    if v_cnt - 1 == -1 {
+                        Text("\(vowels[vowels.count-1])")
+                    }else{
+                        Text("\(vowels[v_cnt-1])")
+                    }
                     
                 }
                     
@@ -77,13 +78,15 @@ struct ContentView: View {
             
             if downFlag {
                 Text("Select Consonant")
-                HStack(spacing: 30){
+                VStack(spacing: 30){
                     if c_cnt - 1 == -1 {
                         Text("\(consonant[v_cnt][consonant[v_cnt].count-1])")
                     }else{
                         Text("\(consonant[v_cnt][c_cnt-1])")
                     }
+                    
                     Text("\(consonant[v_cnt][c_cnt])").fontWeight(.black)
+                    
                     if c_cnt + 1 == consonant[v_cnt].count{
                         Text("\(consonant[v_cnt][0])")
                     }else{
