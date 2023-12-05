@@ -11,7 +11,7 @@ import SwiftUI
 struct crown_type_Watch_AppApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            StartListView()
         }
     }
 }
