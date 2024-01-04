@@ -66,7 +66,32 @@ var consonant: [[String]] = [
     ["や行","や","ゆ","よ"],
     ["ら行","ら","り","る","れ","ろ"],
     ["わ行","わ","を","ん"],
-    ["\",゜","\"","゜","小"]
+    ["\",゜小","\"","゜","小"]
+//        ["あ","い","う","え","お"],
+//        ["か","き","く","け","こ"],
+//        ["さ","し","す","せ","そ"],
+//        ["た","ち","つ","て","と"],
+//        ["な","に","ぬ","ね","の"],
+//        ["は","ひ","ふ","へ","ほ"],
+//        ["ま","み","む","め","も"],
+//        ["や","ゆ","よ"],
+//        ["ら","り","る","れ","ろ"],
+//        ["わ","を","ん"],
+//        ["゛","゜"]
+]
+
+var consonant_uni: [[String]] = [
+    ["あ","い","う","え","お"],
+    ["か","き","く","け","こ"],
+    ["さ","し","す","せ","そ"],
+    ["た","ち","つ","て","と"],
+    ["な","に","ぬ","ね","の"],
+    ["は","ひ","ふ","へ","ほ"],
+    ["ま","み","む","め","も"],
+    ["や","ゆ","よ"],
+    ["ら","り","る","れ","ろ"],
+    ["わ","を","ん"],
+    ["\"","゜","小"]
 //        ["あ","い","う","え","お"],
 //        ["か","き","く","け","こ"],
 //        ["さ","し","す","せ","そ"],
@@ -89,7 +114,7 @@ var dakuon: [[String:String]] = [
 
 var handakuon: [String:String] = ["は":"ぱ","ひ":"ぴ","ふ":"ぷ","へ":"ぺ","ほ":"ぽ"]
 
-
+var henkan : [String:[String]] = ["あ":["ぁ","あ"],"い":["ぃ","い"],"う":["ぅ","う"],"え":["ぇ","え"],"お":["ぉ","お"],"か":["が","か"],"き":["ぎ","き"],"く":["ぐ","く"],"け":["げ","け"],"こ":["ご","こ"],"さ":["ざ","さ"],"し":["じ","し"],"す":["ず","す"],"せ":["ぜ","せ"],"そ":["ぞ","そ"],"は":["ば","ぱ","は"],"ひ":["び","ぴ","ひ"],"ふ":["ぶ","ぷ","ふ"],"へ":["べ","ぺ","へ"],"ほ":["ぼ","ぽ","ほ"],"た":["だ","た"],"ち":["ぢ","ち"],"つ":["っ","づ","つ"],"て":["で","て"],"と":["ど","と"],"や":["ゃ","や"],"ゆ":["ゅ","ゆ"],"よ":["ょ","よ"],"わ":["ゎ","わ"],]
 
 
 let CROWN_CNT = 15
@@ -438,6 +463,16 @@ struct PracticeView: View {
     @State var delete_cnt:Int = 0
     @State var TER:Double = 0.0
     @State var CPM:String = ""
+    @State var entry_time:String = ""
+    
+    @State private var buttonWidth: CGFloat = 35
+    @State private var buttonHeight: CGFloat = 25
+    @State private var input_text: String = ""
+    @State private var entry_text: String = ""
+    @State private var isChange_Vowel = 0
+    @State private var old_input_text: String = ""
+    @State private var henka_cnt = 0
+    @State private var cons_cnt = 0
     @State private var r_phrase: [String] = [
         "おはよう",
         "こんにちは",
@@ -494,6 +529,10 @@ struct PracticeView: View {
         return d[s1.count][s2.count]
     }
     var body: some View {
+//        GeometryReader{ geometry in
+//            Text("Width: \(geometry.size.width)")
+//            Text("Height: \(geometry.size.height)")
+//        }
         VStack {
             
             
@@ -506,7 +545,334 @@ struct PracticeView: View {
             
 
             TabView(){
-                
+                //T9 キーボード
+                VStack{
+                    HStack{
+                        VStack{
+                            Text(r_phrase[phrase_cnt]).frame(maxWidth:.infinity,alignment: .leading)
+                            Text(entry_text+input_text).frame(maxWidth:.infinity,alignment: .leading)
+//                            Text(entry_text)
+//                            Text(input_text)
+                            
+                        }.border(Color.blue).frame(maxWidth:.infinity,maxHeight:15,alignment:.leading)
+                        VStack{
+                            Button(action:{
+                                isChange_Vowel = 0
+                                entry_text += input_text
+                                input_text = ""
+                                if !entry_text.isEmpty{
+                                    entry_text.removeLast()
+                                }
+                            }){
+                                Image(systemName: "delete.backward")
+                            }.buttonStyle(DeleteButtonStyle())
+                        }
+                    }
+                    
+                    
+                    VStack {
+        
+                        HStack{
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 1{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 1
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[0][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[0].count
+                                    input_text = consonant_uni[0][cons_cnt]
+                                }
+                                
+                                
+                            }){
+                                Text("あ")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 2{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 2
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[1][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[1].count
+                                    input_text = consonant_uni[1][cons_cnt]
+                                }
+                            }){
+                                Text("か")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 3{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 3
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[2][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[2].count
+                                    input_text = consonant_uni[2][cons_cnt]
+                                }
+                            }){
+                                Text("さ")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                        }
+                        
+                        HStack{
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 4{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 4
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[3][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[3].count
+                                    input_text = consonant_uni[3][cons_cnt]
+                                }
+                            }){
+                                Text("た")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 5{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 5
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[4][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[4].count
+                                    input_text = consonant_uni[4][cons_cnt]
+                                }
+                            }){
+                                Text("な")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 6{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 6
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[5][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[5].count
+                                    input_text = consonant_uni[5][cons_cnt]
+                                }
+                            }){
+                                Text("は")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                        }
+                        HStack{
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 7{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 7
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[6][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[6].count
+                                    input_text = consonant_uni[6][cons_cnt]
+                                }
+                            }){
+                                Text("ま")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 8{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 8
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[7][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[7].count
+                                    input_text = consonant_uni[7][cons_cnt]
+                                }
+                            }){
+                                Text("や")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 9{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 9
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[8][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[8].count
+                                    input_text = consonant_uni[8][cons_cnt]
+                                }
+                            }){
+                                Text("ら")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                        }
+                        HStack{
+                            Button(action:{
+                                
+                                if isChange_Vowel == 9 || isChange_Vowel == 7 || isChange_Vowel == 5 || input_text == "を" || input_text == "ん"{
+                                    
+                                }else{
+                                    if isChange_Vowel != 10{
+                                        cons_cnt = 0
+                                        isChange_Vowel = 10
+                                        if !input_text.isEmpty{
+                                             old_input_text = String(input_text)
+                                        }
+                                        //                                        input_text = consonant_uni[10][cons_cnt]
+                                        
+                                    }else{
+                                        cons_cnt += 1
+                                        
+                                    }
+                                    
+                                    if !input_text.isEmpty{
+                                        let henkan_cn = cons_cnt % henkan[old_input_text]!.count
+                                        input_text.removeLast()
+                                        input_text.append((henkan[old_input_text]?[henkan_cn])!)
+                                    }
+                                }
+                            }){
+                                Text("\" ゜小")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            
+                            Button(action:{
+                                if !startFlag{
+                                    startTime = Date()
+                                    startFlag = true
+                                }
+                                if isChange_Vowel != 11{
+                                    cons_cnt = 0
+                                    isChange_Vowel = 11
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = consonant_uni[9][cons_cnt]
+                                }else{
+                                    cons_cnt += 1
+                                    cons_cnt %= consonant_uni[9].count
+                                    input_text = consonant_uni[9][cons_cnt]
+                                }
+                            }){
+                                Text("わ")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            
+                            Button(action:{
+                                if isChange_Vowel != 0{
+                                    isChange_Vowel = 0
+                                    entry_text += input_text
+                                    enter_log += input_text
+                                    input_text = ""
+                                }else{
+                                    
+                                    let timeInterval = Date().timeIntervalSince(startTime)
+                                    let time = Int(timeInterval)
+                                    
+                                    
+                                    let m = time / 60 % 60
+                                    let s = time % 60
+                                    
+                                    // ミリ秒
+                                    let ms = Int(timeInterval * 100) % 100
+                                    
+                                    entry_time = String(format: "%dm%d.%ds",  m, s, ms)
+                                    CPM = String(Double(r_phrase[phrase_cnt].count)/(Double(m)+(Double(s)+Double(ms)/100.0)/60.0))
+                                    TER = Double(LevenshteinDistance(s1: r_phrase[phrase_cnt], s2: enter_log)) / Double(enter_log.count)
+                                    
+                                    connector.send(phrase:r_phrase[phrase_cnt],phraseID:phrase_cnt,keystroke:enter_log.count,Time:entry_time,CPM:CPM,TER:TER)
+                                    
+                                    entry_text.removeAll()
+                                    enter_log.removeAll()
+                                    if r_phrase.count - 1 > phrase_cnt{
+                                        phrase_cnt += 1
+                                    }
+                                    startFlag = false
+                                }
+                                
+                            }){
+                                Text("確定")
+                                    .frame(width:buttonWidth,height:buttonHeight)
+                            }
+                            .buttonStyle(MyButtonStyle())
+                            
+                        }
+                    }
+                    .position(x:80,y:80)
+                    
+                       
+                }
                 VStack(spacing:20){
                    
                     VStack{
@@ -564,28 +930,31 @@ struct PracticeView: View {
                         VStack(spacing:20){
                             Button(action:{
                                 
-                                TER = Double(LevenshteinDistance(s1: r_phrase[phrase_cnt], s2: enter_log)) / Double(enter_log.count)
-                                if phrase_cnt < r_phrase.count{
-                                    phrase_cnt += 1
-                                }
-                                enter_text.removeAll()
-                                enter_log.removeAll()
-                                startFlag = false
+                                
+                                
                                 
                                 let timeInterval = Date().timeIntervalSince(startTime)
                                 let time = Int(timeInterval)
                                 
-                                let d = time / 86400
-                                let h = time / 3600 % 24
+                                
                                 let m = time / 60 % 60
                                 let s = time % 60
                                 
                                 // ミリ秒
                                 let ms = Int(timeInterval * 100) % 100
                                 
-                                CPM = String(format: "%d日%d時間%d分%d.%d秒", d, h, m, s, ms)
-                                connector.send(CPM:CPM,TER:TER)
+                                entry_time = String(format: "%dm%d.%ds",  m, s, ms)
+                                CPM = String(Double(r_phrase[phrase_cnt].count)/(Double(m)+(Double(s)+Double(ms)/100.0)/60.0))
+                                TER = Double(LevenshteinDistance(s1: r_phrase[phrase_cnt], s2: enter_log)) / Double(enter_log.count)
                                 
+                                connector.send(phrase:r_phrase[phrase_cnt],phraseID:phrase_cnt,keystroke:enter_log.count,Time:entry_time,CPM:CPM,TER:TER)
+                                
+                                if phrase_cnt < r_phrase.count - 1{
+                                    phrase_cnt += 1
+                                }
+                                enter_text.removeAll()
+                                enter_log.removeAll()
+                                startFlag = false
                             }
                                    
                             ){
@@ -638,28 +1007,29 @@ struct PracticeView: View {
                         VStack(spacing:20){
                             Button(action:{
                                 
-                                TER = Double(LevenshteinDistance(s1: r_phrase[phrase_cnt], s2: enter_log)) / Double(enter_log.count)
-                                if phrase_cnt < r_phrase.count{
-                                    phrase_cnt += 1
-                                }
-                                enter_text.removeAll()
-                                enter_log.removeAll()
-                                startFlag = false
+                                
                                 
                                 let timeInterval = Date().timeIntervalSince(startTime)
                                 let time = Int(timeInterval)
                                 
-                                let d = time / 86400
-                                let h = time / 3600 % 24
+                                
                                 let m = time / 60 % 60
                                 let s = time % 60
                                 
                                 // ミリ秒
                                 let ms = Int(timeInterval * 100) % 100
                                 
-                                CPM = String(format: "%d日%d時間%d分%d.%d秒", d, h, m, s, ms)
-                                connector.send(CPM:CPM,TER:TER)
+                                entry_time = String(format: "%dm%d.%ds",  m, s, ms)
+                                CPM = String(Double(r_phrase.count)/(Double(m)+Double(s+ms)/60.0))
+                                TER = Double(LevenshteinDistance(s1: r_phrase[phrase_cnt], s2: enter_log)) / Double(enter_log.count)
+                                connector.send(phrase:r_phrase[phrase_cnt],phraseID:phrase_cnt,keystroke:enter_log.count,Time:entry_time,CPM:CPM,TER:TER)
                                 
+                                if phrase_cnt < r_phrase.count - 1{
+                                    phrase_cnt += 1
+                                }
+                                enter_text.removeAll()
+                                enter_log.removeAll()
+                                startFlag = false
                             }
                                    
                             ){
@@ -705,30 +1075,36 @@ struct PracticeView: View {
                 
                 
                 VStack{
-//                    TextField("Enter world", text:$enter_text)
+                    TextField("Enter world", text:$enter_text)
                     
                     Button(action:{
                         
-                        TER = Double(LevenshteinDistance(s1: r_phrase[phrase_cnt], s2: enter_log)) / Double(enter_log.count)
-                        phrase_cnt += 1
-                        enter_text.removeAll()
-                        enter_log.removeAll()
-                        startFlag = false
+                        
     
                         let timeInterval = Date().timeIntervalSince(startTime)
                         let time = Int(timeInterval)
     
-                        let d = time / 86400
-                        let h = time / 3600 % 24
+                       
+                        
                         let m = time / 60 % 60
                         let s = time % 60
     
                         // ミリ秒
                         let ms = Int(timeInterval * 100) % 100
     
-                        CPM = String(format: "%d日%d時間%d分%d.%d秒", d, h, m, s, ms)
-                        connector.send(CPM:CPM,TER:TER)
+                        entry_time = String(format: "%dm%d.%ds",  m, s, ms)
+                        CPM = String(Double(r_phrase.count)/(Double(m)+Double(s+ms)/60.0))
+                        TER = Double(LevenshteinDistance(s1: r_phrase[phrase_cnt], s2: enter_log)) / Double(enter_log.count)
                         
+                        connector.send(phrase:r_phrase[phrase_cnt],phraseID:phrase_cnt,keystroke:enter_log.count,Time:entry_time,CPM:CPM,TER:TER)
+                        
+                        
+                        if phrase_cnt < r_phrase.count - 1 {
+                            phrase_cnt += 1
+                        }
+                        enter_text.removeAll()
+                        enter_log.removeAll()
+                        startFlag = false
                     }
                         
                     ){
@@ -736,6 +1112,7 @@ struct PracticeView: View {
                     }
                     
                 }
+                
             }
 
         }
@@ -1509,15 +1886,65 @@ class PhoneConnector: NSObject, ObservableObject, WCSessionDelegate {
     
     
     
-    func send(CPM:String,TER:Double) -> Text{
+    func send(phrase:String,phraseID:Int,keystroke:Int,Time:String,CPM:String,TER:Double) -> Text{
         if WCSession.default.isReachable {
             
             
-            WCSession.default.sendMessage(["CPM": CPM,"TER": TER], replyHandler: nil) {
+            WCSession.default.sendMessage(["phrase":phrase,"phraseID":phraseID,"Keystroke":keystroke,"Time":Time,"CPM": CPM,"TER": TER], replyHandler: nil) {
                 error in
                 print(error)
             }
         }
         return Text("")
+    }
+}
+
+#Preview{
+    StartListView()
+}
+
+struct MyButtonStyle: ButtonStyle {
+    // (1)
+    func makeBody(configuration: Configuration) -> some View {
+        MyButton(configuration:configuration)
+    }
+    // (2)
+    struct MyButton: View {
+        // (2)
+        @Environment(\.isEnabled) var isEnabled
+        let configuration: MyButtonStyle.Configuration
+        var body: some View {
+            // (3)
+            configuration.label
+                // (4)
+                .foregroundColor(isEnabled ? .white : .gray)
+                // (5)
+                .opacity(configuration.isPressed ? 0.2 : 1.0)
+                .background(isEnabled ? Color.gray.opacity(0.4):Color.white)
+                .cornerRadius(5)
+        }
+    }
+}
+
+struct DeleteButtonStyle: ButtonStyle {
+    // (1)
+    func makeBody(configuration: Configuration) -> some View {
+        DeleteButton(configuration:configuration)
+    }
+    // (2)
+    struct DeleteButton: View {
+        // (2)
+        @Environment(\.isEnabled) var isEnabled
+        let configuration: DeleteButtonStyle.Configuration
+        var body: some View {
+            // (3)
+            configuration.label
+                // (4)
+                .foregroundColor(isEnabled ? .white : .gray)
+                // (5)
+                .opacity(configuration.isPressed ? 0.2 : 1.0)
+                .background(.clear)
+                .cornerRadius(5)
+        }
     }
 }
