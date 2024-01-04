@@ -19,7 +19,7 @@ struct ContentView: View {
         VStack {
             
 //            connector.data_print()
-            Text(CPM)
+            Text(connector.receivedMessage)
                 .bold()
             
 //            Button(action: {
@@ -67,6 +67,8 @@ class CSVFileManager{
     var fileManager: FileManager
     
     var folder_name = "crown_type"
+   
+    
     //初期化:filenameのファイルがなかった場合新たにファイルを作製
     init(filename: String) {
         //fileの設定
@@ -75,7 +77,7 @@ class CSVFileManager{
         let docPath = NSHomeDirectory() + "/Documents/" + folder_name
         let filePath = docPath + "/" + self.filename
         //csvデータに書き込むデータを定義
-        let csv = "CPM,TER\r\n"
+        let csv = "user,method,sessionID,phrase,phraseID,keystroke,TIME,CPM,TER\r\n"
         let data = csv.data(using: .utf8)
         
         let fileManager = FileManager.default
@@ -96,13 +98,42 @@ class CSVFileManager{
     //csvファイル書き込み
     func write(content: String){
         let path = NSHomeDirectory() + "/Documents/" + folder_name + "/" + self.filename
-        let old_datas = self.read()
-        let datas = old_datas + content
-        do{
-            try datas.write(toFile: path, atomically: true,encoding: .utf8)
-        }catch{
-            print("failure")
+        let tmpFile: URL = URL(fileURLWithPath: path)
+        if let strm = OutputStream(url: tmpFile,append: false){
+            strm.open()
+            let BOM = "\u{feff}"
+            // U+FEFF：バイトオーダーマーク（Byte Order Mark, BOM）
+            // Unicode の U+FEFFは、表示がない文字。「ZERO WIDTH NO-BREAK SPACE」（幅の無い改行しない空白）
+            strm.write(BOM, maxLength: 3)// UTF-8 の BOM 3バイト 0xEF 0xBB 0xBF 書き込み
+            
+            let new_content = "user,method,sessionID,phrase,phraseID,keystroke,TIME,CPM,TER\r\n" + content
+            
+            let data = new_content.data(using: .utf8)
+            // string.data(using: .utf8)メソッドで文字コード UTF-8 の
+            // Data 構造体を得る
+            _ = data?.withUnsafeBytes {//dataのバッファに直接アクセス
+                strm.write($0.baseAddress!, maxLength: Int(data?.count ?? 0))
+                // 【$0】
+                // 連続したメモリ領域を指す UnsafeRawBufferPointer パラメーター
+                // 【$0.baseAddress】
+                // バッファへの最初のバイトへのポインタ
+                // 【maxLength:】
+                // 書き込むバイトdataバッファのバイト数（全長）
+                // 【data?.count ?? 0】
+                // ?? は、Nil結合演算子（Nil-Coalescing Operator）。
+                // data?.count が nil の場合、0。
+                // 【_ = data】
+                // 戻り値を利用しないため、_で受け取る。
+            }
+            strm.close() // ストリームクローズ
         }
+//        let old_datas = self.read()
+//        let datas = old_datas + content
+//        do{
+//            try datas.write(toFile: path, atomically: true,encoding: .utf8)
+//        }catch{
+//            print("failure")
+//        }
         
     }
     
@@ -128,6 +159,9 @@ class WatchConnector: NSObject,ObservableObject,WCSessionDelegate{
     @Published var timestamp = "0.0"
     @Published var count = 0
     @Published var file_name = ""
+    @Published var user = "author"
+    @Published var method = "T9"
+    @Published var sessionID = "0" //0:練習，１:本番
     override init() {
         super.init()
         if WCSession.isSupported() {
@@ -155,13 +189,22 @@ class WatchConnector: NSObject,ObservableObject,WCSessionDelegate{
     func session(_ session: WCSession, didReceiveMessage message: [String: Any]) {
         print("didReceiveMessage: \(message)")
 //        var str = String(message["COUNT"])
-        let file_name = "layout3_pra.csv"
+        
+        let file_name = "layout3_session5.csv"
         let file = CSVFileManager(filename: file_name)
         DispatchQueue.main.async {
             
             //csvファイルに書き込むために文字列を作成
+            
+            self.receivedMessage += "\(self.user),"
+            self.receivedMessage += "\(self.method),"
+            self.receivedMessage += "\(self.sessionID),"
+            self.receivedMessage += "\(message["phrase"] as! String),"
+            self.receivedMessage += "\(message["phraseID"] as! Int),"
+            self.receivedMessage += "\(message["Keystroke"] as! Int),"
+            self.receivedMessage += "\(message["Time"] as! String),"
             self.receivedMessage += "\(message["CPM"] as! String),"
-            self.receivedMessage += "\(message["TER"] as! Double),"
+            self.receivedMessage += "\(message["TER"] as! Double)\r\n"
 //            self.count = message["WA"] as! Int
 //            file.write(content:self.receivedMessage)
             print(self.receivedMessage)
